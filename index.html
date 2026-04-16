@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <title>HOMEOPS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,8 +13,29 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{--black:#000000;--white:#ffffff;--light:#f0f0f0;--font:'IBM Plex Mono',monospace;}
-body{font-family:var(--font);background:var(--white);color:var(--black);height:100vh;overflow:hidden;display:flex;flex-direction:column;min-width:1280px;}
-
+body {
+    font-family: var(--font);
+    background: var(--white);
+    color: var(--black);
+    
+    /* 1. REMOVE min-width: 1280px; (It breaks mobile) */
+    width: 100%; 
+    
+    /* 2. THE IPHONE FIXES */
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    
+    /* Handles the Notch and the Home Bar at the bottom */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    
+    /* Prevents the "website" feel */
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
 /* HEADER */
 #header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(48px + env(safe-area-inset-top));border-bottom:2px solid var(--black);flex-shrink:0;}
 #header-title{font-size:13px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;}

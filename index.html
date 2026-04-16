@@ -35,6 +35,9 @@ body {
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    overflow-x: hidden; /* Stops side-to-side shaking */
+    overflow-y: auto;   /* Allows vertical scrolling if content is long */
+    height: 100%;       /* Changed from 100vh to 100% for better scrolling */
 }
 /* HEADER */
 #header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(48px + env(safe-area-inset-top));border-bottom:2px solid var(--black);flex-shrink:0;}
@@ -201,6 +204,33 @@ textarea{font-family:var(--font);}
 
 /* SAFE AREA — bottom padding for scrollable content */
 #tab-content{padding-bottom:env(safe-area-inset-bottom);}
+
+/* MOBILE FIXES */
+@media (max-width: 600px) {
+    /* Force the main layout to stack vertically */
+    main, .container, .wrapper, .flex-row { 
+        flex-direction: column !important;
+        display: flex !important;
+    }
+
+    /* Ensure all boxes/columns take up full width */
+    div, section, .column, .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important; /* This kills the 'crop' */
+        padding: 10px !important;
+    }
+
+    /* Shrink large text that might be pushing the screen wide */
+    h1 { font-size: 24px !important; }
+    h2 { font-size: 20px !important; }
+
+    /* Force images/videos to stay inside the phone screen */
+    img, video, canvas {
+        max-width: 100%;
+        height: auto;
+    }
+}
 </style>
 </head>
 <body>

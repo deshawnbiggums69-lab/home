@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
 <title>HOMEOPS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,47 +12,23 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{--black:#000000;--white:#ffffff;--light:#f0f0f0;--font:'IBM Plex Mono',monospace;}
-
-body {
-  font-family: var(--font);
-  background: var(--white);
-  color: var(--black);
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-}
+body{font-family:var(--font);background:var(--white);color:var(--black);height:100vh;overflow:hidden;display:flex;flex-direction:column;min-width:1280px;}
 
 /* HEADER */
-#header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  padding-top: env(safe-area-inset-top);
-  height: calc(48px + env(safe-area-inset-top));
-  border-bottom: 2px solid var(--black);
-  flex-shrink: 0;
-  gap: 8px;
-}
-#header-title{font-size:13px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;white-space:nowrap;}
-#header-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-#save-indicator{font-size:10px;font-weight:400;letter-spacing:0.1em;opacity:0;transition:opacity 0.3s;margin-right:8px;white-space:nowrap;}
+#header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(48px + env(safe-area-inset-top));border-bottom:2px solid var(--black);flex-shrink:0;}
+#header-title{font-size:13px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;}
+#header-controls{display:flex;align-items:center;gap:8px;}
+#save-indicator{font-size:10px;font-weight:400;letter-spacing:0.1em;opacity:0;transition:opacity 0.3s;margin-right:8px;}
 #save-indicator.vis{opacity:1;}
 
 /* BUTTONS */
-.btn{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;background:var(--white);color:var(--black);border:1px solid var(--black);padding:5px 11px;cursor:pointer;display:inline-block;text-align:center;-webkit-appearance:none;border-radius:0;}
+.btn{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;background:var(--white);color:var(--black);border:1px solid var(--black);padding:5px 11px;cursor:pointer;display:inline-block;text-align:center;}
 .btn:hover{background:var(--black);color:var(--white);}
-.btn:active{background:var(--black);color:var(--white);}
 .btn-inv{background:var(--black);color:var(--white);}
 .btn-inv:hover{background:var(--white);color:var(--black);}
-.btn-inv:active{background:var(--white);color:var(--black);}
 
-/* APP — desktop: sidebar + main side by side */
-#app{display:grid;grid-template-columns:288px 1fr;flex:1;overflow:hidden;min-height:0;}
+/* APP */
+#app{display:grid;grid-template-columns:288px 1fr;flex:1;overflow:hidden;}
 
 /* SIDEBAR */
 #sidebar{border-right:2px solid var(--black);display:flex;flex-direction:column;overflow:hidden;}
@@ -61,9 +36,9 @@ body {
 #sidebar-hd-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 #sidebar-lbl{font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;}
 #sidebar-stats span{display:block;font-size:10px;font-weight:400;letter-spacing:0.06em;margin-top:2px;}
-#project-list{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+#project-list{flex:1;overflow-y:auto;overflow-x:hidden;}
 .proj-item{padding:10px 12px;border-bottom:1px solid var(--black);cursor:pointer;}
-.proj-item:active{background:var(--light);}
+.proj-item:hover{background:var(--light);}
 .proj-item.active{background:var(--black);color:var(--white);}
 .proj-name{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
 .proj-meta{display:flex;justify-content:space-between;align-items:center;}
@@ -71,31 +46,25 @@ body {
 .proj-budget{font-size:10px;font-weight:400;}
 
 /* MAIN */
-#main{display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#main{display:flex;flex-direction:column;overflow:hidden;}
 #empty-state{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
 #empty-state p{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#888;}
 #project-panel{display:flex;flex-direction:column;flex:1;overflow:hidden;}
 
-/* MOBILE BACK BUTTON — hidden on desktop */
-#mobile-back{display:none;}
-
 /* PROJECT HEADER */
-#proj-hd{padding:10px 16px;border-bottom:2px solid var(--black);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:8px;}
-#proj-hd-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
-#proj-hd-text{min-width:0;}
-#proj-name-disp{font-size:15px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#proj-sub{font-size:10px;font-weight:400;letter-spacing:0.08em;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#proj-actions{display:flex;gap:8px;flex-shrink:0;}
+#proj-hd{padding:12px 16px;border-bottom:2px solid var(--black);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+#proj-name-disp{font-size:15px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+#proj-sub{font-size:10px;font-weight:400;letter-spacing:0.08em;margin-top:3px;}
+#proj-actions{display:flex;gap:8px;}
 
 /* TABS */
-#tabs{display:flex;border-bottom:2px solid var(--black);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-#tabs::-webkit-scrollbar{display:none;}
-.tab{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:10px 18px;border:none;border-right:1px solid var(--black);background:var(--white);cursor:pointer;color:var(--black);white-space:nowrap;flex-shrink:0;-webkit-appearance:none;border-radius:0;}
-.tab:active{background:var(--light);}
+#tabs{display:flex;border-bottom:2px solid var(--black);flex-shrink:0;}
+.tab{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:10px 18px;border:none;border-right:1px solid var(--black);background:var(--white);cursor:pointer;color:var(--black);}
+.tab:hover{background:var(--light);}
 .tab.active{background:var(--black);color:var(--white);}
 
 /* TAB CONTENT */
-#tab-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom);}
+#tab-content{flex:1;overflow-y:auto;overflow-x:hidden;}
 .tab-panel{display:none;padding:16px;}
 .tab-panel.active{display:block;}
 .sec-lbl{font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--black);}
@@ -105,10 +74,10 @@ body {
 .ov-cell{background:var(--white);padding:12px;}
 .ov-lbl{font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;color:#555;}
 .ov-val{font-size:13px;font-weight:500;letter-spacing:0.04em;cursor:text;border-bottom:1px dashed transparent;min-height:20px;}
-.ov-val:active{background:var(--light);}
+.ov-val:hover{border-bottom-color:var(--black);background:var(--light);}
 .ov-full{grid-column:1/-1;}
-.edit-inp{font-family:var(--font);font-size:13px;font-weight:500;border:1px solid var(--black);padding:3px 5px;background:var(--white);color:var(--black);width:100%;border-radius:0;-webkit-appearance:none;}
-.edit-sel{font-family:var(--font);font-size:12px;font-weight:500;border:1px solid var(--black);padding:3px 5px;background:var(--white);color:var(--black);width:100%;border-radius:0;-webkit-appearance:none;}
+.edit-inp{font-family:var(--font);font-size:13px;font-weight:500;border:1px solid var(--black);padding:3px 5px;background:var(--white);color:var(--black);width:100%;}
+.edit-sel{font-family:var(--font);font-size:12px;font-weight:500;border:1px solid var(--black);padding:3px 5px;background:var(--white);color:var(--black);width:100%;}
 
 /* METRICS */
 .metrics-bar{border:1px solid var(--black);margin-bottom:16px;}
@@ -123,17 +92,15 @@ body {
 .sum-lbl{font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;}
 .sum-val{font-size:14px;font-weight:700;letter-spacing:0.02em;}
 
-/* TABLE WRAPPER — enables horizontal scroll on mobile */
-.tbl-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-
 /* TABLE */
 .data-tbl{width:100%;border-collapse:collapse;font-size:12px;}
 .data-tbl th{font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-align:left;padding:8px;border-bottom:2px solid var(--black);background:var(--light);white-space:nowrap;cursor:pointer;user-select:none;}
 .data-tbl th.no-sort{cursor:default;}
-.data-tbl th:active:not(.no-sort){background:#ddd;}
-.data-tbl td{padding:8px;border-bottom:1px solid #ddd;vertical-align:middle;font-size:11px;white-space:nowrap;}
+.data-tbl th:hover:not(.no-sort){background:#ddd;}
+.data-tbl td{padding:8px;border-bottom:1px solid #ddd;vertical-align:middle;font-size:11px;}
 .data-tbl tr:last-child td{border-bottom:none;}
-.desc-cell{max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.data-tbl tr:hover td{background:var(--light);}
+.desc-cell{max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tool-badge{font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 5px;border:1px solid var(--black);}
 .sort-asc::after{content:' ↑';}
 .sort-desc::after{content:' ↓';}
@@ -143,35 +110,35 @@ body {
 .ar-grid{display:grid;gap:8px;margin-bottom:8px;}
 .fg{display:flex;flex-direction:column;gap:2px;}
 .fl{font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;}
-.fi{font-family:var(--font);font-size:12px;font-weight:400;border:1px solid var(--black);padding:5px 8px;background:var(--white);color:var(--black);border-radius:0;-webkit-appearance:none;}
+.fi{font-family:var(--font);font-size:12px;font-weight:400;border:1px solid var(--black);padding:5px 8px;background:var(--white);color:var(--black);}
 .fi:focus{outline:2px solid var(--black);outline-offset:-1px;}
-.fs{font-family:var(--font);font-size:12px;font-weight:400;border:1px solid var(--black);padding:5px 8px;background:var(--white);color:var(--black);border-radius:0;-webkit-appearance:none;}
+.fs{font-family:var(--font);font-size:12px;font-weight:400;border:1px solid var(--black);padding:5px 8px;background:var(--white);color:var(--black);}
 .ferr{font-size:10px;color:#cc0000;letter-spacing:0.05em;min-height:14px;}
 .ar-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
 .tbl-ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 
 /* NOTES */
-#notes-area{width:100%;min-height:300px;font-family:var(--font);font-size:12px;font-weight:400;line-height:1.9;border:1px solid var(--black);padding:12px;resize:vertical;background:var(--white);color:var(--black);border-radius:0;-webkit-appearance:none;}
+#notes-area{width:100%;min-height:420px;font-family:var(--font);font-size:12px;font-weight:400;line-height:1.9;border:1px solid var(--black);padding:12px;resize:vertical;background:var(--white);color:var(--black);}
 #notes-area:focus{outline:2px solid var(--black);outline-offset:-1px;}
 #notes-cc{font-size:10px;margin-top:8px;letter-spacing:0.08em;text-align:right;}
 
 /* MODAL OVERLAY */
-#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:100;align-items:center;justify-content:center;padding:16px;}
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:100;align-items:center;justify-content:center;}
 #modal-overlay.open{display:flex;}
-#modal{background:var(--white);border:3px solid var(--black);width:min(580px,92vw);max-height:88dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#modal{background:var(--white);border:3px solid var(--black);width:580px;max-height:92vh;overflow-y:auto;}
 #modal-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid var(--black);}
 #modal-ttl{font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;}
-#modal-x{font-family:var(--font);font-size:18px;font-weight:300;background:none;border:none;cursor:pointer;padding:2px 8px;line-height:1;border-radius:0;-webkit-appearance:none;}
-#modal-x:active{background:var(--black);color:var(--white);}
+#modal-x{font-family:var(--font);font-size:18px;font-weight:300;background:none;border:none;cursor:pointer;padding:2px 8px;line-height:1;}
+#modal-x:hover{background:var(--black);color:var(--white);}
 #modal-body{padding:16px;}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .m-full{grid-column:1/-1;}
 #modal-ft{padding:12px 16px;border-top:1px solid var(--black);display:flex;justify-content:flex-end;gap:8px;}
 
 /* CONFIRM */
-#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;align-items:center;justify-content:center;padding:16px;}
+#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;align-items:center;justify-content:center;}
 #confirm-overlay.open{display:flex;}
-#confirm-box{background:var(--white);border:3px solid var(--black);padding:24px;width:min(380px,88vw);}
+#confirm-box{background:var(--white);border:3px solid var(--black);padding:24px;width:380px;}
 #confirm-msg{font-size:12px;font-weight:400;letter-spacing:0.05em;margin-bottom:18px;line-height:1.65;}
 #confirm-acts{display:flex;gap:8px;justify-content:flex-end;}
 
@@ -182,125 +149,36 @@ body {
 .plan-progress-lbl span{font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;}
 .plan-progress-track{height:10px;background:var(--light);border:1px solid var(--black);position:relative;}
 .plan-progress-fill{height:100%;background:var(--black);transition:width 0.3s;}
+.plan-steps-wrap{display:flex;flex-direction:column;gap:0;}
 .plan-step{border:1px solid var(--black);margin-bottom:6px;background:var(--white);}
-.plan-step-hd{display:flex;align-items:stretch;}
-.plan-step-num{font-size:10px;font-weight:700;letter-spacing:0.15em;padding:10px;border-right:1px solid var(--black);background:var(--light);min-width:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.plan-step-title{font-size:12px;font-weight:600;letter-spacing:0.06em;flex:1;padding:10px;text-transform:uppercase;min-width:0;word-break:break-word;}
+.plan-step-hd{display:flex;align-items:center;gap:0;padding:0;}
+.plan-step-num{font-size:10px;font-weight:700;letter-spacing:0.15em;padding:10px 10px;border-right:1px solid var(--black);background:var(--light);min-width:40px;text-align:center;align-self:stretch;display:flex;align-items:center;justify-content:center;}
+.plan-step-title{font-size:12px;font-weight:600;letter-spacing:0.06em;flex:1;padding:10px 12px;text-transform:uppercase;}
 .plan-step-desc{font-size:11px;font-weight:400;color:#555;padding:0 12px 8px 12px;letter-spacing:0.03em;line-height:1.6;display:none;}
 .plan-step.has-desc .plan-step-desc{display:block;}
-.plan-step-status{font-size:9px;font-weight:700;letter-spacing:0.1em;padding:3px 5px;border:1px solid currentColor;white-space:nowrap;flex-shrink:0;align-self:center;margin-right:6px;}
+.plan-step-status{font-size:9px;font-weight:700;letter-spacing:0.12em;padding:3px 6px;border:1px solid currentColor;white-space:nowrap;margin-right:8px;}
 .step-ns{color:#888;}
 .step-ip{color:#0055cc;}
 .step-dn{color:#007700;}
 .step-bl{color:#cc4400;}
-.plan-step-acts{display:flex;gap:3px;padding:0 6px;align-items:center;flex-shrink:0;}
-.plan-step-move{font-family:var(--font);font-size:11px;font-weight:600;background:none;border:1px solid var(--black);cursor:pointer;padding:2px 5px;line-height:1.4;color:var(--black);border-radius:0;-webkit-appearance:none;}
-.plan-step-move:active{background:var(--black);color:var(--white);}
+.plan-step-acts{display:flex;gap:4px;padding:0 8px;align-items:center;}
+.plan-step-move{font-family:var(--font);font-size:11px;font-weight:600;background:none;border:1px solid var(--black);cursor:pointer;padding:2px 6px;line-height:1.4;color:var(--black);}
+.plan-step-move:hover{background:var(--black);color:var(--white);}
 .plan-step-move:disabled{opacity:0.25;cursor:default;}
+.plan-step-move:disabled:hover{background:none;color:var(--black);}
 .plan-phase-hd{font-size:9px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;padding:4px 8px;background:var(--black);color:var(--white);margin-bottom:6px;margin-top:10px;}
 .plan-phase-hd:first-child{margin-top:0;}
 .plan-edit-row{padding:12px;border-top:1px solid var(--black);background:var(--light);display:none;}
 .plan-edit-row.open{display:block;}
 
 /* SCROLLBAR */
-::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:var(--light);}
 ::-webkit-scrollbar-thumb{background:var(--black);}
 textarea{font-family:var(--font);}
 
-/* ═══════════════════════════════════════════════════════════════════
-   MOBILE  (≤ 767px)
-   ═══════════════════════════════════════════════════════════════════ */
-@media (max-width: 767px) {
-
-  /* ── App shell: single-column; JS toggles sidebar vs main ── */
-  #app { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-  #app.show-main #sidebar { display: none; }
-  #app:not(.show-main) #main   { display: none; }
-  #sidebar { border-right: none; }
-
-  /* ── Header ── */
-  #header { padding-left: 12px; padding-right: 12px; }
-  #header-title { font-size: 11px; letter-spacing: 0.12em; }
-  #save-indicator { display: none; }
-
-  /* ── Back button ── */
-  #mobile-back {
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    padding: 6px 10px;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-  }
-
-  /* ── Project header ── */
-  #proj-hd { padding: 8px 12px; }
-  #proj-name-disp { font-size: 12px; }
-  #proj-sub { font-size: 9px; white-space: normal; line-height: 1.4; }
-  #proj-actions .btn { font-size: 10px; padding: 5px 8px; }
-
-  /* ── Tabs ── */
-  .tab { font-size: 10px; letter-spacing: 0.07em; padding: 10px 11px; }
-
-  /* ── Tab panel padding ── */
-  .tab-panel { padding: 12px; }
-
-  /* ── Overview ── */
-  .ov-cell { padding: 10px 8px; }
-  .ov-val  { font-size: 12px; }
-
-  /* ── All form grids → single column
-     !important overrides the inline style="grid-template-columns:..." ── */
-  .ar-grid { grid-template-columns: 1fr !important; }
-
-  /* ── Summary bars ── */
-  #ledger-sum { grid-template-columns: repeat(2,1fr) !important; }
-  #plan-sum   { grid-template-columns: repeat(2,1fr) !important; }
-  /* tools-sum has 3 cells — keep them, they fit at ~390px */
-
-  /* ── Tables: scroll horizontally ── */
-  .data-tbl td { font-size: 10px; padding: 6px 5px; }
-  .data-tbl th { font-size: 8px;  padding: 6px 5px; }
-
-  /* ── Modal: slides up from bottom on mobile ── */
-  #modal-overlay { padding: 0; align-items: flex-end; }
-  #modal {
-    width: 100%;
-    max-width: 100%;
-    max-height: 90dvh;
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    border-top: 3px solid var(--black);
-  }
-  .m-grid  { grid-template-columns: 1fr !important; gap: 10px; }
-  .m-full  { grid-column: 1 !important; }
-
-  /* ── Confirm dialog ── */
-  #confirm-box { padding: 18px; }
-
-  /* ── Plan steps: status + action buttons wrap to second row ── */
-  .plan-step-hd    { flex-wrap: wrap; }
-  .plan-step-title { font-size: 11px; padding: 8px; }
-  .plan-step-status{ font-size: 8px; letter-spacing: 0.08em; }
-  .plan-step-acts  {
-    width: 100%;
-    padding: 4px 8px 8px;
-    border-top: 1px solid #e8e8e8;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  .plan-step-move { padding: 4px 8px; }
-
-  /* ── Notes ── */
-  #notes-area { min-height: 180px; }
-
-  /* ── Larger tap targets for inputs / buttons ── */
-  .fi, .fs { padding: 9px 8px; font-size: 14px; }
-  .btn { padding: 8px 12px; }
-  .btn-inv { padding: 8px 12px; }
-}
+/* SAFE AREA — bottom padding for scrollable content */
+#tab-content{padding-bottom:env(safe-area-inset-bottom);}
 </style>
 </head>
 <body>
@@ -316,8 +194,6 @@ textarea{font-family:var(--font);}
 </div>
 
 <div id="app">
-
-  <!-- SIDEBAR -->
   <div id="sidebar">
     <div id="sidebar-hd">
       <div id="sidebar-hd-top">
@@ -332,7 +208,6 @@ textarea{font-family:var(--font);}
     <div id="project-list"></div>
   </div>
 
-  <!-- MAIN -->
   <div id="main">
     <div id="empty-state">
       <p>NO PROJECT SELECTED</p>
@@ -341,17 +216,13 @@ textarea{font-family:var(--font);}
 
     <div id="project-panel">
       <div id="proj-hd">
-        <div id="proj-hd-left">
-          <!-- Only visible on mobile -->
-          <button id="mobile-back" class="btn" onclick="showSidebar()">← BACK</button>
-          <div id="proj-hd-text">
-            <div id="proj-name-disp"></div>
-            <div id="proj-sub"></div>
-          </div>
+        <div>
+          <div id="proj-name-disp"></div>
+          <div id="proj-sub"></div>
         </div>
         <div id="proj-actions">
           <button class="btn" onclick="openEditModal()">EDIT</button>
-          <button class="btn" onclick="deleteProject()">DEL</button>
+          <button class="btn" onclick="deleteProject()">DELETE</button>
         </div>
       </div>
 
@@ -378,7 +249,7 @@ textarea{font-family:var(--font);}
             <div class="sum-cell"><div class="sum-lbl">EXPENSES</div><div class="sum-val" id="s-exp">$0.00</div></div>
             <div class="sum-cell"><div class="sum-lbl">INCOME</div><div class="sum-val" id="s-inc">$0.00</div></div>
             <div class="sum-cell"><div class="sum-lbl">NET</div><div class="sum-val" id="s-net">$0.00</div></div>
-            <div class="sum-cell"><div class="sum-lbl">REMAINING</div><div class="sum-val" id="s-rem">$0.00</div></div>
+            <div class="sum-cell"><div class="sum-lbl">REMAINING BUDGET</div><div class="sum-val" id="s-rem">$0.00</div></div>
           </div>
 
           <div class="add-row" id="ledger-form">
@@ -406,20 +277,18 @@ textarea{font-family:var(--font);}
             <span class="sec-lbl" style="margin:0;padding:0;border:none;">RECORDS</span>
             <button class="btn btn-inv" onclick="toggleLedgerForm()">+ ADD RECORD</button>
           </div>
-          <div class="tbl-wrap">
-            <table class="data-tbl" id="l-tbl">
-              <thead><tr>
-                <th onclick="sortLedger('date')" id="th-date">DATE</th>
-                <th class="no-sort">DESCRIPTION</th>
-                <th class="no-sort">VENDOR</th>
-                <th onclick="sortLedger('category')" id="th-cat">CATEGORY</th>
-                <th onclick="sortLedger('amount')" id="th-amt">AMOUNT</th>
-                <th class="no-sort">TYPE</th>
-                <th class="no-sort">ACTIONS</th>
-              </tr></thead>
-              <tbody id="l-body"></tbody>
-            </table>
-          </div>
+          <table class="data-tbl" id="l-tbl">
+            <thead><tr>
+              <th onclick="sortLedger('date')" id="th-date">DATE</th>
+              <th class="no-sort">DESCRIPTION</th>
+              <th class="no-sort">VENDOR</th>
+              <th onclick="sortLedger('category')" id="th-cat">CATEGORY</th>
+              <th onclick="sortLedger('amount')" id="th-amt">AMOUNT</th>
+              <th class="no-sort">TYPE</th>
+              <th class="no-sort">ACTIONS</th>
+            </tr></thead>
+            <tbody id="l-body"></tbody>
+          </table>
         </div>
 
         <!-- TOOLS -->
@@ -448,25 +317,25 @@ textarea{font-family:var(--font);}
             <span class="sec-lbl" style="margin:0;padding:0;border:none;">TOOLS LIST</span>
             <button class="btn btn-inv" onclick="toggleToolForm()">+ ADD TOOL</button>
           </div>
-          <div class="tbl-wrap">
-            <table class="data-tbl" id="t-tbl">
-              <thead><tr>
-                <th class="no-sort">TOOL NAME</th>
-                <th class="no-sort">QTY</th>
-                <th class="no-sort">STATUS</th>
-                <th class="no-sort">EST. COST</th>
-                <th class="no-sort">NOTES</th>
-                <th class="no-sort">ACTIONS</th>
-              </tr></thead>
-              <tbody id="t-body"></tbody>
-            </table>
-          </div>
+          <table class="data-tbl" id="t-tbl">
+            <thead><tr>
+              <th class="no-sort">TOOL NAME</th>
+              <th class="no-sort">QTY</th>
+              <th class="no-sort">STATUS</th>
+              <th class="no-sort">EST. COST</th>
+              <th class="no-sort">NOTES</th>
+              <th class="no-sort">ACTIONS</th>
+            </tr></thead>
+            <tbody id="t-body"></tbody>
+          </table>
         </div>
 
         <!-- PLAN -->
         <div class="tab-panel" id="tab-plan">
+          <!-- summary bar injected by JS -->
           <div id="plan-sum" class="plan-summary" style="grid-template-columns:repeat(4,1fr);"></div>
 
+          <!-- progress bar -->
           <div class="plan-progress-wrap">
             <div class="plan-progress-lbl">
               <span>COMPLETION PROGRESS</span>
@@ -477,6 +346,7 @@ textarea{font-family:var(--font);}
             </div>
           </div>
 
+          <!-- add step form -->
           <div class="add-row" id="step-form" style="margin-bottom:12px;">
             <div class="ar-grid" style="grid-template-columns:2fr 1fr 1fr;">
               <div class="fg"><label class="fl">STEP TITLE *</label><input class="fi" type="text" id="s-title" placeholder="What needs to be done?"><span class="ferr" id="s-title-e"></span></div>
@@ -517,7 +387,6 @@ textarea{font-family:var(--font);}
       </div><!-- /tab-content -->
     </div><!-- /project-panel -->
   </div><!-- /main -->
-
 </div><!-- /app -->
 
 <!-- PROJECT MODAL -->
@@ -614,17 +483,6 @@ function save() {
   el._t = setTimeout(() => el.classList.remove('vis'), 3000);
 }
 
-// ─── MOBILE NAV ──────────────────────────────────────────────────────────────
-function isMobile() { return window.innerWidth <= 767; }
-
-function showSidebar() {
-  document.getElementById('app').classList.remove('show-main');
-}
-
-function showMain() {
-  if (isMobile()) document.getElementById('app').classList.add('show-main');
-}
-
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
@@ -682,7 +540,6 @@ function renderMain() {
   if (!p) {
     document.getElementById('empty-state').style.display = 'flex';
     document.getElementById('project-panel').style.display = 'none';
-    if (isMobile()) showSidebar();
     return;
   }
   document.getElementById('empty-state').style.display = 'none';
@@ -707,7 +564,6 @@ function selectProject(id) {
   S.editingStep = null;
   setTabUI('overview');
   save();
-  showMain();
   render();
 }
 
@@ -840,6 +696,7 @@ function renderLedger() {
     return 0;
   });
 
+  // Sort header indicators
   ['th-date','th-cat','th-amt'].forEach(id => {
     const el = document.getElementById(id);
     el.className = '';
@@ -857,7 +714,7 @@ function renderLedger() {
         <td><input class="fi" type="text" id="le-desc" value="${esc(r.description||'')}"></td>
         <td><input class="fi" type="text" id="le-vendor" value="${esc(r.vendor||'')}"></td>
         <td><select class="fs" id="le-cat">${['MATERIALS','LABOR','TOOLS','PERMITS','FEES','MISC'].map(c=>`<option ${r.category===c?'selected':''}>${c}</option>`).join('')}</select></td>
-        <td><input class="fi" type="number" id="le-amt" value="${r.amount||''}" step="0.01" min="0" style="width:80px;"></td>
+        <td><input class="fi" type="number" id="le-amt" value="${r.amount||''}" step="0.01" min="0" style="width:90px;"></td>
         <td><select class="fs" id="le-type"><option ${r.type==='EXPENSE'?'selected':''}>EXPENSE</option><option ${r.type==='INCOME'?'selected':''}>INCOME</option></select></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-inv" onclick="commitLedgerEdit('${r.id}')" style="font-size:9px;padding:3px 6px;">SAVE</button>
@@ -983,9 +840,9 @@ function renderTools() {
     if (S.editingTool === t.id) {
       tr.innerHTML = `
         <td><input class="fi" type="text" id="te-name" value="${esc(t.name||'')}"></td>
-        <td><input class="fi" type="number" id="te-qty" value="${t.quantity||1}" min="1" style="width:55px;"></td>
+        <td><input class="fi" type="number" id="te-qty" value="${t.quantity||1}" min="1" style="width:60px;"></td>
         <td><select class="fs" id="te-status">${['OWNED','NEED TO BUY','RENT','BORROWED'].map(s=>`<option ${t.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
-        <td><input class="fi" type="number" id="te-cost" value="${t.cost||''}" step="0.01" min="0" style="width:80px;"></td>
+        <td><input class="fi" type="number" id="te-cost" value="${t.cost||''}" step="0.01" min="0" style="width:90px;"></td>
         <td><input class="fi" type="text" id="te-notes" value="${esc(t.notes||'')}"></td>
         <td style="white-space:nowrap;">
           <button class="btn btn-inv" onclick="commitToolEdit('${t.id}')" style="font-size:9px;padding:3px 6px;">SAVE</button>
@@ -1094,6 +951,7 @@ function renderPlan() {
     return;
   }
 
+  // Group by phase
   const phases = [];
   const phaseMap = {};
   steps.forEach((s,i) => {
@@ -1323,7 +1181,6 @@ function saveProjectModal() {
 
   closeModal();
   save(); render();
-  if (S.activeId) showMain();
 }
 
 function deleteProject() {
@@ -1379,8 +1236,6 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadState();
 render();
-// On mobile: if a project was active in a previous session, jump straight to it
-if (isMobile() && S.activeId) showMain();
 </script>
 
 <script>

@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>HOMEOPS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--black:#000000;--white:#ffffff;--light:#f0f0f0;--font:'IBM Plex Mono',monospace;}
+body{font-family:var(--font);background:var(--white);color:var(--black);height:100vh;overflow:hidden;display:flex;flex-direction:column;min-width:1280px;}
+
+/* HEADER */
+#header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(48px + env(safe-area-inset-top));border-bottom:2px solid var(--black);flex-shrink:0;}
+#header-title{font-size:13px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;}
+#header-controls{display:flex;align-items:center;gap:8px;}
+#save-indicator{font-size:10px;font-weight:400;letter-spacing:0.1em;opacity:0;transition:opacity 0.3s;margin-right:8px;}
+#save-indicator.vis{opacity:1;}
+
+/* BUTTONS */
+.btn{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;background:var(--white);color:var(--black);border:1px solid var(--black);padding:5px 11px;cursor:pointer;display:inline-block;text-align:center;}
+.btn:hover{background:var(--black);color:var(--white);}
+.btn-inv{background:var(--black);color:var(--white);}
+.btn-inv:hover{background:var(--white);color:var(--black);}
+
+/* APP */
+#app{display:grid;grid-template-columns:288px 1fr;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+#sidebar{border-right:2px solid var(--black);display:flex;flex-direction:column;overflow:hidden;}
+#sidebar-hd{padding:12px;border-bottom:2px solid var(--black);flex-shrink:0;}
+#sidebar-hd-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+#sidebar-lbl{font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;}
+#sidebar-stats span{display:block;font-size:10px;font-weight:400;letter-spacing:0.06em;margin-top:2px;}
+#project-list{flex:1;overflow-y:auto;overflow-x:hidden;}
+.proj-item{padding:10px 12px;border-bottom:1px solid var(--black);cursor:pointer;}
+.proj-item:hover{background:var(--light);}
+.proj-item.active{background:var(--black);color:var(--white);}
+.proj-name{font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.proj-meta{display:flex;justify-content:space-between;align-items:center;}
+.status-badge{font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 4px;border:1px solid currentColor;}
+.proj-budget{font-size:10px;font-weight:400;}
+
+/* MAIN */
+#main{display:flex;flex-direction:column;overflow:hidden;}
+#empty-state{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;}
+#empty-state p{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#888;}
+#project-panel{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+
+/* PROJECT HEADER */
+#proj-hd{padding:12px 16px;border-bottom:2px solid var(--black);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+#proj-name-disp{font-size:15px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+#proj-sub{font-size:10px;font-weight:400;letter-spacing:0.08em;margin-top:3px;}
+#proj-actions{display:flex;gap:8px;}
+
+/* TABS */
+#tabs{display:flex;border-bottom:2px solid var(--black);flex-shrink:0;}
+.tab{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:10px 18px;border:none;border-right:1px solid var(--black);background:var(--white);cursor:pointer;color:var(--black);}
+.tab:hover{background:var(--light);}
+.tab.active{background:var(--black);color:var(--white);}
+
+/* TAB CONTENT */
+#tab-content{flex:1;overflow-y:auto;overflow-x:hidden;}
+.tab-panel{display:none;padding:16px;}
+.tab-panel.active{display:block;}
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--black);}
+
+/* OVERVIEW */
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--black);border:1px solid var(--black);margin-bottom:16px;}
+.ov-cell{background:var(--white);padding:12px;}
+.ov-lbl{font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;color:#555;}
+.ov-val{font-size:13px;font-weight:500;letter-spacing:0.04em;cursor:text;border-bottom:1px dashed transparent;min-height:20px;}
+.ov-val:hover{border-bottom-color:var(--black);background:var(--light);}
+.ov-full{grid-column:1/-1;}
+.edit-inp{font-family:var(--font);font-size:13px;font-weight:500;border:1px solid var(--black);padding:3px 5px;background:var(--white);color:var(--black);width:100%;}
+.edit-sel{font-family:var(--font);font-size:12px;font-weight:500;border:1px solid var(--black);padding:3px 5px;background:var(--white);color:var(--black);width:100%;}
+
+/* METRICS */
+.metrics-bar{border:1px solid var(--black);margin-bottom:16px;}
+.met-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid #e0e0e0;}
+.met-row:last-child{border-bottom:none;}
+.met-lbl{font-size:10px;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;}
+.met-val{font-size:12px;font-weight:600;}
+
+/* SUMMARY BAR */
+.sum-bar{display:grid;gap:1px;background:var(--black);border:2px solid var(--black);margin-bottom:16px;flex-shrink:0;}
+.sum-cell{background:var(--white);padding:10px 12px;}
+.sum-lbl{font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:4px;}
+.sum-val{font-size:14px;font-weight:700;letter-spacing:0.02em;}
+
+/* TABLE */
+.data-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.data-tbl th{font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-align:left;padding:8px;border-bottom:2px solid var(--black);background:var(--light);white-space:nowrap;cursor:pointer;user-select:none;}
+.data-tbl th.no-sort{cursor:default;}
+.data-tbl th:hover:not(.no-sort){background:#ddd;}
+.data-tbl td{padding:8px;border-bottom:1px solid #ddd;vertical-align:middle;font-size:11px;}
+.data-tbl tr:last-child td{border-bottom:none;}
+.data-tbl tr:hover td{background:var(--light);}
+.desc-cell{max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tool-badge{font-size:9px;font-weight:700;letter-spacing:0.1em;padding:2px 5px;border:1px solid var(--black);}
+.sort-asc::after{content:' ↑';}
+.sort-desc::after{content:' ↓';}
+
+/* ADD ROW */
+.add-row{border:1px solid var(--black);padding:12px;margin-bottom:12px;background:var(--light);display:none;}
+.ar-grid{display:grid;gap:8px;margin-bottom:8px;}
+.fg{display:flex;flex-direction:column;gap:2px;}
+.fl{font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;}
+.fi{font-family:var(--font);font-size:12px;font-weight:400;border:1px solid var(--black);padding:5px 8px;background:var(--white);color:var(--black);}
+.fi:focus{outline:2px solid var(--black);outline-offset:-1px;}
+.fs{font-family:var(--font);font-size:12px;font-weight:400;border:1px solid var(--black);padding:5px 8px;background:var(--white);color:var(--black);}
+.ferr{font-size:10px;color:#cc0000;letter-spacing:0.05em;min-height:14px;}
+.ar-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.tbl-ctrl{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+
+/* NOTES */
+#notes-area{width:100%;min-height:420px;font-family:var(--font);font-size:12px;font-weight:400;line-height:1.9;border:1px solid var(--black);padding:12px;resize:vertical;background:var(--white);color:var(--black);}
+#notes-area:focus{outline:2px solid var(--black);outline-offset:-1px;}
+#notes-cc{font-size:10px;margin-top:8px;letter-spacing:0.08em;text-align:right;}
+
+/* MODAL OVERLAY */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:100;align-items:center;justify-content:center;}
+#modal-overlay.open{display:flex;}
+#modal{background:var(--white);border:3px solid var(--black);width:580px;max-height:92vh;overflow-y:auto;}
+#modal-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid var(--black);}
+#modal-ttl{font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;}
+#modal-x{font-family:var(--font);font-size:18px;font-weight:300;background:none;border:none;cursor:pointer;padding:2px 8px;line-height:1;}
+#modal-x:hover{background:var(--black);color:var(--white);}
+#modal-body{padding:16px;}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.m-full{grid-column:1/-1;}
+#modal-ft{padding:12px 16px;border-top:1px solid var(--black);display:flex;justify-content:flex-end;gap:8px;}
+
+/* CONFIRM */
+#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;align-items:center;justify-content:center;}
+#confirm-overlay.open{display:flex;}
+#confirm-box{background:var(--white);border:3px solid var(--black);padding:24px;width:380px;}
+#confirm-msg{font-size:12px;font-weight:400;letter-spacing:0.05em;margin-bottom:18px;line-height:1.65;}
+#confirm-acts{display:flex;gap:8px;justify-content:flex-end;}
+
+/* PLAN TAB */
+.plan-summary{display:grid;gap:1px;background:var(--black);border:2px solid var(--black);margin-bottom:16px;}
+.plan-progress-wrap{border:1px solid var(--black);margin-bottom:16px;padding:12px;}
+.plan-progress-lbl{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.plan-progress-lbl span{font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;}
+.plan-progress-track{height:10px;background:var(--light);border:1px solid var(--black);position:relative;}
+.plan-progress-fill{height:100%;background:var(--black);transition:width 0.3s;}
+.plan-steps-wrap{display:flex;flex-direction:column;gap:0;}
+.plan-step{border:1px solid var(--black);margin-bottom:6px;background:var(--white);}
+.plan-step-hd{display:flex;align-items:center;gap:0;padding:0;}
+.plan-step-num{font-size:10px;font-weight:700;letter-spacing:0.15em;padding:10px 10px;border-right:1px solid var(--black);background:var(--light);min-width:40px;text-align:center;align-self:stretch;display:flex;align-items:center;justify-content:center;}
+.plan-step-title{font-size:12px;font-weight:600;letter-spacing:0.06em;flex:1;padding:10px 12px;text-transform:uppercase;}
+.plan-step-desc{font-size:11px;font-weight:400;color:#555;padding:0 12px 8px 12px;letter-spacing:0.03em;line-height:1.6;display:none;}
+.plan-step.has-desc .plan-step-desc{display:block;}
+.plan-step-status{font-size:9px;font-weight:700;letter-spacing:0.12em;padding:3px 6px;border:1px solid currentColor;white-space:nowrap;margin-right:8px;}
+.step-ns{color:#888;}
+.step-ip{color:#0055cc;}
+.step-dn{color:#007700;}
+.step-bl{color:#cc4400;}
+.plan-step-acts{display:flex;gap:4px;padding:0 8px;align-items:center;}
+.plan-step-move{font-family:var(--font);font-size:11px;font-weight:600;background:none;border:1px solid var(--black);cursor:pointer;padding:2px 6px;line-height:1.4;color:var(--black);}
+.plan-step-move:hover{background:var(--black);color:var(--white);}
+.plan-step-move:disabled{opacity:0.25;cursor:default;}
+.plan-step-move:disabled:hover{background:none;color:var(--black);}
+.plan-phase-hd{font-size:9px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;padding:4px 8px;background:var(--black);color:var(--white);margin-bottom:6px;margin-top:10px;}
+.plan-phase-hd:first-child{margin-top:0;}
+.plan-edit-row{padding:12px;border-top:1px solid var(--black);background:var(--light);display:none;}
+.plan-edit-row.open{display:block;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--light);}
+::-webkit-scrollbar-thumb{background:var(--black);}
+textarea{font-family:var(--font);}
+
+/* SAFE AREA — bottom padding for scrollable content */
+#tab-content{padding-bottom:env(safe-area-inset-bottom);}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-title">HOMEOPS // COMMAND CENTER</div>
+  <div id="header-controls">
+    <span id="save-indicator">SAVED 00:00:00</span>
+    <label class="btn" for="import-input" style="cursor:pointer;">⊕ IMPORT</label>
+    <input type="file" id="import-input" accept=".json" style="display:none;">
+    <button class="btn" onclick="exportData()">⊞ EXPORT</button>
+  </div>
+</div>
+
+<div id="app">
+  <div id="sidebar">
+    <div id="sidebar-hd">
+      <div id="sidebar-hd-top">
+        <span id="sidebar-lbl">PROJECTS</span>
+        <button class="btn btn-inv" onclick="openAddModal()">+ NEW</button>
+      </div>
+      <div id="sidebar-stats">
+        <span id="stat-count">0 PROJECTS</span>
+        <span id="stat-spend">TOTAL SPEND: $0.00</span>
+      </div>
+    </div>
+    <div id="project-list"></div>
+  </div>
+
+  <div id="main">
+    <div id="empty-state">
+      <p>NO PROJECT SELECTED</p>
+      <p style="color:#bbb;">SELECT OR CREATE A PROJECT</p>
+    </div>
+
+    <div id="project-panel">
+      <div id="proj-hd">
+        <div>
+          <div id="proj-name-disp"></div>
+          <div id="proj-sub"></div>
+        </div>
+        <div id="proj-actions">
+          <button class="btn" onclick="openEditModal()">EDIT</button>
+          <button class="btn" onclick="deleteProject()">DELETE</button>
+        </div>
+      </div>
+
+      <div id="tabs">
+        <button class="tab active" onclick="switchTab('overview')">OVERVIEW</button>
+        <button class="tab" onclick="switchTab('ledger')">LEDGER</button>
+        <button class="tab" onclick="switchTab('tools')">TOOLS</button>
+        <button class="tab" onclick="switchTab('plan')">PLAN</button>
+        <button class="tab" onclick="switchTab('notes')">NOTES</button>
+      </div>
+
+      <div id="tab-content">
+
+        <!-- OVERVIEW -->
+        <div class="tab-panel active" id="tab-overview">
+          <div class="ov-grid" id="ov-grid"></div>
+          <div class="sec-lbl">PROGRESS METRICS</div>
+          <div id="ov-metrics"></div>
+        </div>
+
+        <!-- LEDGER -->
+        <div class="tab-panel" id="tab-ledger">
+          <div class="sum-bar" id="ledger-sum" style="grid-template-columns:repeat(4,1fr);">
+            <div class="sum-cell"><div class="sum-lbl">EXPENSES</div><div class="sum-val" id="s-exp">$0.00</div></div>
+            <div class="sum-cell"><div class="sum-lbl">INCOME</div><div class="sum-val" id="s-inc">$0.00</div></div>
+            <div class="sum-cell"><div class="sum-lbl">NET</div><div class="sum-val" id="s-net">$0.00</div></div>
+            <div class="sum-cell"><div class="sum-lbl">REMAINING BUDGET</div><div class="sum-val" id="s-rem">$0.00</div></div>
+          </div>
+
+          <div class="add-row" id="ledger-form">
+            <div class="ar-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="fg"><label class="fl">DATE</label><input class="fi" type="date" id="l-date"><span class="ferr" id="l-date-e"></span></div>
+              <div class="fg"><label class="fl">DESCRIPTION</label><input class="fi" type="text" id="l-desc" placeholder="Description"><span class="ferr" id="l-desc-e"></span></div>
+              <div class="fg"><label class="fl">VENDOR / SOURCE</label><input class="fi" type="text" id="l-vendor" placeholder="Vendor or source"></div>
+            </div>
+            <div class="ar-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="fg"><label class="fl">CATEGORY</label>
+                <select class="fs" id="l-cat"><option>MATERIALS</option><option>LABOR</option><option>TOOLS</option><option>PERMITS</option><option>FEES</option><option>MISC</option></select>
+              </div>
+              <div class="fg"><label class="fl">AMOUNT ($)</label><input class="fi" type="number" id="l-amt" placeholder="0.00" step="0.01" min="0"><span class="ferr" id="l-amt-e"></span></div>
+              <div class="fg"><label class="fl">TYPE</label>
+                <select class="fs" id="l-type"><option>EXPENSE</option><option>INCOME</option></select>
+              </div>
+            </div>
+            <div class="ar-acts">
+              <button class="btn" onclick="hideLedgerForm()">CANCEL</button>
+              <button class="btn btn-inv" onclick="saveLedgerNew()">SAVE RECORD</button>
+            </div>
+          </div>
+
+          <div class="tbl-ctrl">
+            <span class="sec-lbl" style="margin:0;padding:0;border:none;">RECORDS</span>
+            <button class="btn btn-inv" onclick="toggleLedgerForm()">+ ADD RECORD</button>
+          </div>
+          <table class="data-tbl" id="l-tbl">
+            <thead><tr>
+              <th onclick="sortLedger('date')" id="th-date">DATE</th>
+              <th class="no-sort">DESCRIPTION</th>
+              <th class="no-sort">VENDOR</th>
+              <th onclick="sortLedger('category')" id="th-cat">CATEGORY</th>
+              <th onclick="sortLedger('amount')" id="th-amt">AMOUNT</th>
+              <th class="no-sort">TYPE</th>
+              <th class="no-sort">ACTIONS</th>
+            </tr></thead>
+            <tbody id="l-body"></tbody>
+          </table>
+        </div>
+
+        <!-- TOOLS -->
+        <div class="tab-panel" id="tab-tools">
+          <div class="sum-bar" id="tools-sum" style="grid-template-columns:repeat(3,1fr);"></div>
+
+          <div class="add-row" id="tool-form">
+            <div class="ar-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="fg"><label class="fl">TOOL NAME</label><input class="fi" type="text" id="t-name" placeholder="Tool name"><span class="ferr" id="t-name-e"></span></div>
+              <div class="fg"><label class="fl">QUANTITY</label><input class="fi" type="number" id="t-qty" value="1" min="1"></div>
+              <div class="fg"><label class="fl">STATUS</label>
+                <select class="fs" id="t-status"><option>OWNED</option><option>NEED TO BUY</option><option>RENT</option><option>BORROWED</option></select>
+              </div>
+            </div>
+            <div class="ar-grid" style="grid-template-columns:1fr 2fr;">
+              <div class="fg"><label class="fl">EST. COST ($)</label><input class="fi" type="number" id="t-cost" placeholder="0.00" step="0.01" min="0"></div>
+              <div class="fg"><label class="fl">NOTES</label><input class="fi" type="text" id="t-notes" placeholder="Notes"></div>
+            </div>
+            <div class="ar-acts">
+              <button class="btn" onclick="hideToolForm()">CANCEL</button>
+              <button class="btn btn-inv" onclick="saveToolNew()">SAVE TOOL</button>
+            </div>
+          </div>
+
+          <div class="tbl-ctrl">
+            <span class="sec-lbl" style="margin:0;padding:0;border:none;">TOOLS LIST</span>
+            <button class="btn btn-inv" onclick="toggleToolForm()">+ ADD TOOL</button>
+          </div>
+          <table class="data-tbl" id="t-tbl">
+            <thead><tr>
+              <th class="no-sort">TOOL NAME</th>
+              <th class="no-sort">QTY</th>
+              <th class="no-sort">STATUS</th>
+              <th class="no-sort">EST. COST</th>
+              <th class="no-sort">NOTES</th>
+              <th class="no-sort">ACTIONS</th>
+            </tr></thead>
+            <tbody id="t-body"></tbody>
+          </table>
+        </div>
+
+        <!-- PLAN -->
+        <div class="tab-panel" id="tab-plan">
+          <!-- summary bar injected by JS -->
+          <div id="plan-sum" class="plan-summary" style="grid-template-columns:repeat(4,1fr);"></div>
+
+          <!-- progress bar -->
+          <div class="plan-progress-wrap">
+            <div class="plan-progress-lbl">
+              <span>COMPLETION PROGRESS</span>
+              <span id="plan-pct-lbl">0%</span>
+            </div>
+            <div class="plan-progress-track">
+              <div class="plan-progress-fill" id="plan-progress-fill" style="width:0%;"></div>
+            </div>
+          </div>
+
+          <!-- add step form -->
+          <div class="add-row" id="step-form" style="margin-bottom:12px;">
+            <div class="ar-grid" style="grid-template-columns:2fr 1fr 1fr;">
+              <div class="fg"><label class="fl">STEP TITLE *</label><input class="fi" type="text" id="s-title" placeholder="What needs to be done?"><span class="ferr" id="s-title-e"></span></div>
+              <div class="fg"><label class="fl">PHASE / GROUP</label><input class="fi" type="text" id="s-phase" placeholder="e.g. PREP, INSTALL..."></div>
+              <div class="fg"><label class="fl">STATUS</label>
+                <select class="fs" id="s-status">
+                  <option value="NOT STARTED">NOT STARTED</option>
+                  <option value="IN PROGRESS">IN PROGRESS</option>
+                  <option value="DONE">DONE</option>
+                  <option value="BLOCKED">BLOCKED</option>
+                </select>
+              </div>
+            </div>
+            <div class="ar-grid" style="grid-template-columns:1fr;">
+              <div class="fg"><label class="fl">DESCRIPTION / NOTES</label><input class="fi" type="text" id="s-desc" placeholder="Optional details, dependencies, or notes"></div>
+            </div>
+            <div class="ar-acts">
+              <button class="btn" onclick="hideStepForm()">CANCEL</button>
+              <button class="btn btn-inv" onclick="saveStepNew()">ADD STEP</button>
+            </div>
+          </div>
+
+          <div class="tbl-ctrl">
+            <span class="sec-lbl" style="margin:0;padding:0;border:none;">WORKFLOW STEPS</span>
+            <button class="btn btn-inv" onclick="toggleStepForm()">+ ADD STEP</button>
+          </div>
+
+          <div id="plan-steps-list"></div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="tab-panel" id="tab-notes">
+          <div class="sec-lbl">FREEFORM NOTES</div>
+          <textarea id="notes-area" placeholder="Write your notes here..."></textarea>
+          <div id="notes-cc">0 CHARACTERS</div>
+        </div>
+
+      </div><!-- /tab-content -->
+    </div><!-- /project-panel -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- PROJECT MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div id="modal-hd">
+      <span id="modal-ttl">NEW PROJECT</span>
+      <button id="modal-x" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div id="modal-body">
+      <div class="m-grid">
+        <div class="fg m-full">
+          <label class="fl">PROJECT NAME *</label>
+          <input class="fi" type="text" id="m-name" placeholder="Project name">
+          <span class="ferr" id="m-name-e"></span>
+        </div>
+        <div class="fg">
+          <label class="fl">STATUS</label>
+          <select class="fs" id="m-status"><option value="PLANNED">PLANNED</option><option value="IN PROGRESS">IN PROGRESS</option><option value="COMPLETE">COMPLETE</option></select>
+        </div>
+        <div class="fg">
+          <label class="fl">PRIORITY</label>
+          <select class="fs" id="m-priority"><option value="HIGH">HIGH</option><option value="MED">MED</option><option value="LOW">LOW</option></select>
+        </div>
+        <div class="fg">
+          <label class="fl">BUDGET CEILING ($)</label>
+          <input class="fi" type="number" id="m-budget" placeholder="0.00" step="0.01" min="0">
+          <span class="ferr" id="m-budget-e"></span>
+        </div>
+        <div class="fg">
+          <label class="fl">START DATE</label>
+          <input class="fi" type="date" id="m-start">
+        </div>
+        <div class="fg">
+          <label class="fl">TARGET COMPLETION</label>
+          <input class="fi" type="date" id="m-target">
+        </div>
+        <div class="fg m-full">
+          <label class="fl">DESCRIPTION</label>
+          <textarea class="fi" id="m-desc" rows="3" placeholder="Project description" style="resize:vertical;"></textarea>
+        </div>
+      </div>
+    </div>
+    <div id="modal-ft">
+      <button class="btn" onclick="closeModal()">CANCEL</button>
+      <button class="btn btn-inv" onclick="saveProjectModal()">SAVE PROJECT</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div id="confirm-msg"></div>
+    <div id="confirm-acts">
+      <button class="btn" id="confirm-no">CANCEL</button>
+      <button class="btn btn-inv" id="confirm-yes">CONFIRM</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const S = {
+  projects: [],
+  activeId: null,
+  tab: 'overview',
+  lSort: { col: 'date', dir: 'desc' },
+  editingProject: null,
+  editingLedger: null,
+  editingTool: null,
+  editingStep: null
+};
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+function loadState() {
+  try {
+    const raw = localStorage.getItem('homeops_v1');
+    if (raw) {
+      const d = JSON.parse(raw);
+      S.projects = d.projects || [];
+      S.activeId = d.activeId || null;
+    }
+  } catch(e) {}
+}
+
+function save() {
+  localStorage.setItem('homeops_v1', JSON.stringify({ projects: S.projects, activeId: S.activeId }));
+  const el = document.getElementById('save-indicator');
+  const t = new Date().toTimeString().slice(0,8);
+  el.textContent = 'SAVED ' + t;
+  el.classList.add('vis');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('vis'), 3000);
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function fmt(n) {
+  const v = parseFloat(n) || 0;
+  return '$' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function getP(id) { return S.projects.find(p => p.id === (id || S.activeId)); }
+
+function confirm2(msg, cb) {
+  document.getElementById('confirm-msg').textContent = msg;
+  const ov = document.getElementById('confirm-overlay');
+  ov.classList.add('open');
+  const yes = document.getElementById('confirm-yes');
+  const no = document.getElementById('confirm-no');
+  const done = () => { ov.classList.remove('open'); yes.onclick = null; no.onclick = null; };
+  yes.onclick = () => { done(); cb(); };
+  no.onclick = done;
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  renderSidebar();
+  renderMain();
+}
+
+function renderSidebar() {
+  let totalSpend = 0;
+  S.projects.forEach(p => {
+    totalSpend += (p.ledger||[]).filter(r=>r.type==='EXPENSE').reduce((s,r)=>s+parseFloat(r.amount||0),0);
+  });
+  document.getElementById('stat-count').textContent = S.projects.length + ' PROJECT' + (S.projects.length===1?'':'S');
+  document.getElementById('stat-spend').textContent = 'TOTAL SPEND: ' + fmt(totalSpend);
+
+  const list = document.getElementById('project-list');
+  list.innerHTML = '';
+  S.projects.forEach(p => {
+    const exp = (p.ledger||[]).filter(r=>r.type==='EXPENSE').reduce((s,r)=>s+parseFloat(r.amount||0),0);
+    const div = document.createElement('div');
+    div.className = 'proj-item' + (p.id===S.activeId?' active':'');
+    div.onclick = () => selectProject(p.id);
+    div.innerHTML = `<div class="proj-name">${esc(p.name)}</div>
+      <div class="proj-meta"><span class="status-badge">${esc(p.status)}</span><span class="proj-budget">${fmt(exp)} / ${fmt(p.budget)}</span></div>`;
+    list.appendChild(div);
+  });
+}
+
+function renderMain() {
+  const p = getP();
+  if (!p) {
+    document.getElementById('empty-state').style.display = 'flex';
+    document.getElementById('project-panel').style.display = 'none';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('project-panel').style.display = 'flex';
+
+  document.getElementById('proj-name-disp').textContent = p.name.toUpperCase();
+  document.getElementById('proj-sub').textContent =
+    p.priority + ' PRIORITY  ·  ' + p.status + (p.startDate ? '  ·  START: ' + p.startDate : '') + (p.targetDate ? '  ·  TARGET: ' + p.targetDate : '');
+
+  if (S.tab === 'overview') renderOverview();
+  else if (S.tab === 'ledger') renderLedger();
+  else if (S.tab === 'tools') renderTools();
+  else if (S.tab === 'plan') renderPlan();
+  else if (S.tab === 'notes') renderNotes();
+}
+
+function selectProject(id) {
+  S.activeId = id;
+  S.tab = 'overview';
+  S.editingLedger = null;
+  S.editingTool = null;
+  S.editingStep = null;
+  setTabUI('overview');
+  save();
+  render();
+}
+
+function switchTab(tab) {
+  S.tab = tab;
+  S.editingLedger = null;
+  S.editingTool = null;
+  S.editingStep = null;
+  setTabUI(tab);
+  renderMain();
+}
+
+function setTabUI(tab) {
+  const tabs = ['overview','ledger','tools','plan','notes'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabs[i]===tab));
+  document.querySelectorAll('.tab-panel').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// ─── OVERVIEW ─────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const p = getP();
+  const g = document.getElementById('ov-grid');
+
+  const fields = [
+    { key:'name',        label:'PROJECT NAME',    type:'text'   },
+    { key:'status',      label:'STATUS',          type:'select', opts:['PLANNED','IN PROGRESS','COMPLETE'] },
+    { key:'priority',    label:'PRIORITY',        type:'select', opts:['HIGH','MED','LOW'] },
+    { key:'budget',      label:'BUDGET CEILING',  type:'number' },
+    { key:'startDate',   label:'START DATE',      type:'date'   },
+    { key:'targetDate',  label:'TARGET DATE',     type:'date'   },
+  ];
+
+  g.innerHTML = fields.map(f => {
+    const disp = f.type === 'number' ? fmt(p[f.key]) : esc(p[f.key] || '—');
+    return `<div class="ov-cell">
+      <div class="ov-lbl">${f.label}</div>
+      <div class="ov-val" data-key="${f.key}" data-type="${f.type}" ${f.opts?'data-opts="'+f.opts.join(',') +'"':''} onclick="startOvEdit(this)">${disp}</div>
+    </div>`;
+  }).join('') + `<div class="ov-cell ov-full">
+    <div class="ov-lbl">DESCRIPTION</div>
+    <div class="ov-val" data-key="description" data-type="textarea" onclick="startOvEdit(this)">${esc(p.description||'—')}</div>
+  </div>`;
+
+  const exp = (p.ledger||[]).filter(r=>r.type==='EXPENSE').reduce((s,r)=>s+parseFloat(r.amount||0),0);
+  const inc = (p.ledger||[]).filter(r=>r.type==='INCOME').reduce((s,r)=>s+parseFloat(r.amount||0),0);
+  const net = exp - inc;
+  const rem = parseFloat(p.budget||0) - exp;
+  const pct = p.budget > 0 ? Math.round(exp/p.budget*100) : 0;
+  const tools = p.tools || [];
+  const owned = tools.filter(t=>t.status==='OWNED').length;
+  const needCost = tools.filter(t=>t.status!=='OWNED').reduce((s,t)=>s+parseFloat(t.cost||0),0);
+
+  document.getElementById('ov-metrics').innerHTML = `<div class="metrics-bar">
+    <div class="met-row"><span class="met-lbl">TOTAL EXPENSES</span><span class="met-val">${fmt(exp)}</span></div>
+    <div class="met-row"><span class="met-lbl">TOTAL INCOME</span><span class="met-val">${fmt(inc)}</span></div>
+    <div class="met-row"><span class="met-lbl">NET SPEND</span><span class="met-val">${fmt(net)}</span></div>
+    <div class="met-row"><span class="met-lbl">REMAINING BUDGET</span><span class="met-val">${fmt(rem)}</span></div>
+    <div class="met-row"><span class="met-lbl">BUDGET USED</span><span class="met-val">${pct}%</span></div>
+    <div class="met-row"><span class="met-lbl">LEDGER RECORDS</span><span class="met-val">${(p.ledger||[]).length}</span></div>
+    <div class="met-row"><span class="met-lbl">TOOLS OWNED</span><span class="met-val">${owned} / ${tools.length}</span></div>
+    <div class="met-row"><span class="met-lbl">EST. ACQUISITION COST</span><span class="met-val">${fmt(needCost)}</span></div>
+  </div>`;
+}
+
+function startOvEdit(el) {
+  if (el.querySelector('input,select,textarea')) return;
+  const p = getP();
+  const key = el.dataset.key;
+  const type = el.dataset.type;
+  const cur = p[key] || '';
+  let inp;
+
+  if (type === 'select') {
+    inp = document.createElement('select');
+    inp.className = 'edit-sel';
+    (el.dataset.opts||'').split(',').forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o; opt.textContent = o;
+      if (o === cur) opt.selected = true;
+      inp.appendChild(opt);
+    });
+  } else if (type === 'textarea') {
+    inp = document.createElement('textarea');
+    inp.className = 'edit-inp';
+    inp.rows = 3;
+    inp.style.resize = 'vertical';
+    inp.value = cur;
+  } else {
+    inp = document.createElement('input');
+    inp.className = 'edit-inp';
+    inp.type = type;
+    inp.value = cur;
+  }
+
+  el.textContent = '';
+  el.appendChild(inp);
+  inp.focus();
+
+  const commit = () => {
+    p[key] = inp.value;
+    save();
+    renderOverview();
+    renderSidebar();
+  };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => {
+    if (e.key==='Enter' && type!=='textarea') { e.preventDefault(); commit(); }
+    if (e.key==='Escape') renderOverview();
+  });
+}
+
+// ─── LEDGER ───────────────────────────────────────────────────────────────────
+function renderLedger() {
+  const p = getP();
+  const ledger = p.ledger || [];
+  const exp = ledger.filter(r=>r.type==='EXPENSE').reduce((s,r)=>s+parseFloat(r.amount||0),0);
+  const inc = ledger.filter(r=>r.type==='INCOME').reduce((s,r)=>s+parseFloat(r.amount||0),0);
+  document.getElementById('s-exp').textContent = fmt(exp);
+  document.getElementById('s-inc').textContent = fmt(inc);
+  document.getElementById('s-net').textContent = fmt(exp - inc);
+  document.getElementById('s-rem').textContent = fmt((parseFloat(p.budget)||0) - exp);
+
+  const { col, dir } = S.lSort;
+  const sorted = [...ledger].sort((a,b) => {
+    let va = a[col], vb = b[col];
+    if (col==='amount') { va=parseFloat(va||0); vb=parseFloat(vb||0); }
+    if (va<vb) return dir==='asc'?-1:1;
+    if (va>vb) return dir==='asc'?1:-1;
+    return 0;
+  });
+
+  // Sort header indicators
+  ['th-date','th-cat','th-amt'].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = '';
+    const map = {'th-date':'date','th-cat':'category','th-amt':'amount'};
+    if (map[id] === col) el.className = 'sort-'+dir;
+  });
+
+  const tbody = document.getElementById('l-body');
+  tbody.innerHTML = '';
+  sorted.forEach(r => {
+    const tr = document.createElement('tr');
+    if (S.editingLedger === r.id) {
+      tr.innerHTML = `
+        <td><input class="fi" type="date" id="le-date" value="${esc(r.date||'')}"></td>
+        <td><input class="fi" type="text" id="le-desc" value="${esc(r.description||'')}"></td>
+        <td><input class="fi" type="text" id="le-vendor" value="${esc(r.vendor||'')}"></td>
+        <td><select class="fs" id="le-cat">${['MATERIALS','LABOR','TOOLS','PERMITS','FEES','MISC'].map(c=>`<option ${r.category===c?'selected':''}>${c}</option>`).join('')}</select></td>
+        <td><input class="fi" type="number" id="le-amt" value="${r.amount||''}" step="0.01" min="0" style="width:90px;"></td>
+        <td><select class="fs" id="le-type"><option ${r.type==='EXPENSE'?'selected':''}>EXPENSE</option><option ${r.type==='INCOME'?'selected':''}>INCOME</option></select></td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-inv" onclick="commitLedgerEdit('${r.id}')" style="font-size:9px;padding:3px 6px;">SAVE</button>
+          <button class="btn" onclick="cancelLedgerEdit()" style="font-size:9px;padding:3px 6px;">✕</button>
+        </td>`;
+    } else {
+      tr.innerHTML = `
+        <td>${esc(r.date||'')}</td>
+        <td class="desc-cell" title="${esc(r.description||'')}">${esc(r.description||'')}</td>
+        <td>${esc(r.vendor||'')}</td>
+        <td>${esc(r.category||'')}</td>
+        <td>${fmt(r.amount)}</td>
+        <td>${esc(r.type||'')}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn" onclick="editLedger('${r.id}')" style="font-size:9px;padding:3px 6px;">EDIT</button>
+          <button class="btn" onclick="deleteLedger('${r.id}')" style="font-size:9px;padding:3px 6px;">DEL</button>
+        </td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+function sortLedger(col) {
+  if (S.lSort.col===col) S.lSort.dir = S.lSort.dir==='asc'?'desc':'asc';
+  else { S.lSort.col=col; S.lSort.dir='desc'; }
+  renderLedger();
+}
+
+function toggleLedgerForm() {
+  const f = document.getElementById('ledger-form');
+  const open = f.style.display==='block';
+  f.style.display = open ? 'none' : 'block';
+  if (!open) {
+    document.getElementById('l-date').value = new Date().toISOString().slice(0,10);
+    clearLErr();
+  }
+}
+
+function hideLedgerForm() {
+  document.getElementById('ledger-form').style.display = 'none';
+  clearLInputs(); clearLErr();
+}
+
+function clearLInputs() {
+  ['l-date','l-desc','l-vendor','l-amt'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('l-cat').selectedIndex = 0;
+  document.getElementById('l-type').selectedIndex = 0;
+}
+
+function clearLErr() {
+  ['l-date-e','l-desc-e','l-amt-e'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=''; });
+}
+
+function saveLedgerNew() {
+  clearLErr();
+  const desc = document.getElementById('l-desc').value.trim();
+  const amt = document.getElementById('l-amt').value;
+  let ok = true;
+  if (!desc) { document.getElementById('l-desc-e').textContent='DESCRIPTION REQUIRED'; ok=false; }
+  if (!amt || isNaN(parseFloat(amt)) || parseFloat(amt)<0) { document.getElementById('l-amt-e').textContent='VALID AMOUNT REQUIRED'; ok=false; }
+  if (!ok) return;
+
+  const p = getP();
+  if (!p.ledger) p.ledger = [];
+  p.ledger.push({
+    id: uid(),
+    date: document.getElementById('l-date').value,
+    description: desc,
+    vendor: document.getElementById('l-vendor').value.trim(),
+    category: document.getElementById('l-cat').value,
+    amount: parseFloat(amt).toFixed(2),
+    type: document.getElementById('l-type').value
+  });
+  hideLedgerForm();
+  save(); renderLedger(); renderSidebar();
+}
+
+function editLedger(id) { S.editingLedger = id; renderLedger(); }
+function cancelLedgerEdit() { S.editingLedger = null; renderLedger(); }
+
+function commitLedgerEdit(id) {
+  const p = getP();
+  const r = p.ledger.find(x=>x.id===id);
+  if (!r) return;
+  const desc = document.getElementById('le-desc').value.trim();
+  const amt = document.getElementById('le-amt').value;
+  if (!desc || !amt || isNaN(parseFloat(amt))) return;
+  r.date = document.getElementById('le-date').value;
+  r.description = desc;
+  r.vendor = document.getElementById('le-vendor').value.trim();
+  r.category = document.getElementById('le-cat').value;
+  r.amount = parseFloat(amt).toFixed(2);
+  r.type = document.getElementById('le-type').value;
+  S.editingLedger = null;
+  save(); renderLedger(); renderSidebar();
+}
+
+function deleteLedger(id) {
+  confirm2('DELETE THIS LEDGER RECORD? THIS CANNOT BE UNDONE.', () => {
+    const p = getP();
+    p.ledger = p.ledger.filter(r=>r.id!==id);
+    save(); renderLedger(); renderSidebar();
+  });
+}
+
+// ─── TOOLS ────────────────────────────────────────────────────────────────────
+function renderTools() {
+  const p = getP();
+  const tools = p.tools || [];
+  const owned = tools.filter(t=>t.status==='OWNED').length;
+  const still = tools.filter(t=>t.status!=='OWNED').length;
+  const needCost = tools.filter(t=>t.status!=='OWNED').reduce((s,t)=>s+parseFloat(t.cost||0),0);
+
+  document.getElementById('tools-sum').innerHTML = `
+    <div class="sum-cell"><div class="sum-lbl">TOTAL TOOLS</div><div class="sum-val">${tools.length}</div></div>
+    <div class="sum-cell"><div class="sum-lbl">OWNED</div><div class="sum-val">${owned}</div></div>
+    <div class="sum-cell"><div class="sum-lbl">STILL NEEDED</div><div class="sum-val">${still} // ${fmt(needCost)}</div></div>`;
+
+  const tbody = document.getElementById('t-body');
+  tbody.innerHTML = '';
+  tools.forEach(t => {
+    const tr = document.createElement('tr');
+    if (S.editingTool === t.id) {
+      tr.innerHTML = `
+        <td><input class="fi" type="text" id="te-name" value="${esc(t.name||'')}"></td>
+        <td><input class="fi" type="number" id="te-qty" value="${t.quantity||1}" min="1" style="width:60px;"></td>
+        <td><select class="fs" id="te-status">${['OWNED','NEED TO BUY','RENT','BORROWED'].map(s=>`<option ${t.status===s?'selected':''}>${s}</option>`).join('')}</select></td>
+        <td><input class="fi" type="number" id="te-cost" value="${t.cost||''}" step="0.01" min="0" style="width:90px;"></td>
+        <td><input class="fi" type="text" id="te-notes" value="${esc(t.notes||'')}"></td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-inv" onclick="commitToolEdit('${t.id}')" style="font-size:9px;padding:3px 6px;">SAVE</button>
+          <button class="btn" onclick="cancelToolEdit()" style="font-size:9px;padding:3px 6px;">✕</button>
+        </td>`;
+    } else {
+      tr.innerHTML = `
+        <td>${esc(t.name||'')}</td>
+        <td>${t.quantity||1}</td>
+        <td><span class="tool-badge">${esc(t.status||'')}</span></td>
+        <td>${t.cost ? fmt(t.cost) : '—'}</td>
+        <td class="desc-cell" title="${esc(t.notes||'')}">${esc(t.notes||'—')}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn" onclick="editTool('${t.id}')" style="font-size:9px;padding:3px 6px;">EDIT</button>
+          <button class="btn" onclick="deleteTool('${t.id}')" style="font-size:9px;padding:3px 6px;">DEL</button>
+        </td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleToolForm() {
+  const f = document.getElementById('tool-form');
+  const open = f.style.display==='block';
+  f.style.display = open ? 'none' : 'block';
+  if (!open) document.getElementById('t-name').focus();
+}
+
+function hideToolForm() { document.getElementById('tool-form').style.display='none'; }
+
+function saveToolNew() {
+  const name = document.getElementById('t-name').value.trim();
+  document.getElementById('t-name-e').textContent = '';
+  if (!name) { document.getElementById('t-name-e').textContent='TOOL NAME REQUIRED'; return; }
+  const p = getP();
+  if (!p.tools) p.tools = [];
+  p.tools.push({
+    id: uid(),
+    name,
+    quantity: parseInt(document.getElementById('t-qty').value)||1,
+    status: document.getElementById('t-status').value,
+    cost: parseFloat(document.getElementById('t-cost').value)||0,
+    notes: document.getElementById('t-notes').value.trim()
+  });
+  document.getElementById('t-name').value='';
+  document.getElementById('t-qty').value='1';
+  document.getElementById('t-cost').value='';
+  document.getElementById('t-notes').value='';
+  document.getElementById('t-status').selectedIndex=0;
+  hideToolForm();
+  save(); renderTools();
+}
+
+function editTool(id) { S.editingTool=id; renderTools(); }
+function cancelToolEdit() { S.editingTool=null; renderTools(); }
+
+function commitToolEdit(id) {
+  const p = getP();
+  const t = p.tools.find(x=>x.id===id);
+  if (!t) return;
+  const name = document.getElementById('te-name').value.trim();
+  if (!name) return;
+  t.name = name;
+  t.quantity = parseInt(document.getElementById('te-qty').value)||1;
+  t.status = document.getElementById('te-status').value;
+  t.cost = parseFloat(document.getElementById('te-cost').value)||0;
+  t.notes = document.getElementById('te-notes').value.trim();
+  S.editingTool = null;
+  save(); renderTools();
+}
+
+function deleteTool(id) {
+  confirm2('DELETE THIS TOOL RECORD? THIS CANNOT BE UNDONE.', () => {
+    const p = getP();
+    p.tools = p.tools.filter(t=>t.id!==id);
+    save(); renderTools();
+  });
+}
+
+// ─── PLAN ─────────────────────────────────────────────────────────────────────
+function renderPlan() {
+  const p = getP();
+  const steps = p.steps || [];
+
+  const total = steps.length;
+  const done = steps.filter(s=>s.status==='DONE').length;
+  const inprog = steps.filter(s=>s.status==='IN PROGRESS').length;
+  const blocked = steps.filter(s=>s.status==='BLOCKED').length;
+  const notStarted = steps.filter(s=>s.status==='NOT STARTED').length;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+
+  document.getElementById('plan-sum').innerHTML = `
+    <div class="sum-cell"><div class="sum-lbl">TOTAL STEPS</div><div class="sum-val">${total}</div></div>
+    <div class="sum-cell"><div class="sum-lbl">DONE</div><div class="sum-val">${done}</div></div>
+    <div class="sum-cell"><div class="sum-lbl">IN PROGRESS</div><div class="sum-val">${inprog}</div></div>
+    <div class="sum-cell"><div class="sum-lbl">REMAINING</div><div class="sum-val">${notStarted + blocked}</div></div>`;
+
+  document.getElementById('plan-pct-lbl').textContent = pct + '%';
+  document.getElementById('plan-progress-fill').style.width = pct + '%';
+
+  const list = document.getElementById('plan-steps-list');
+  list.innerHTML = '';
+
+  if (steps.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:32px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#bbb;">NO STEPS YET — ADD YOUR FIRST STEP ABOVE</div>';
+    return;
+  }
+
+  // Group by phase
+  const phases = [];
+  const phaseMap = {};
+  steps.forEach((s,i) => {
+    const ph = (s.phase||'').trim().toUpperCase() || '';
+    if (!phaseMap[ph]) { phaseMap[ph] = []; phases.push(ph); }
+    phaseMap[ph].push({step:s, idx:i});
+  });
+
+  const statusClass = {
+    'NOT STARTED':'step-ns',
+    'IN PROGRESS':'step-ip',
+    'DONE':'step-dn',
+    'BLOCKED':'step-bl'
+  };
+
+  phases.forEach(ph => {
+    if (ph) {
+      const phEl = document.createElement('div');
+      phEl.className = 'plan-phase-hd';
+      phEl.textContent = ph;
+      list.appendChild(phEl);
+    }
+    phaseMap[ph].forEach(({step:s, idx}) => {
+      const stepEl = document.createElement('div');
+      stepEl.className = 'plan-step' + (s.description ? ' has-desc' : '');
+
+      if (S.editingStep === s.id) {
+        stepEl.innerHTML = `
+          <div class="plan-step-hd">
+            <div class="plan-step-num">${idx+1}</div>
+            <div style="flex:1;padding:8px 12px;">
+              <div class="ar-grid" style="grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div class="fg"><label class="fl">STEP TITLE *</label><input class="fi" type="text" id="se-title" value="${esc(s.title||'')}"></div>
+                <div class="fg"><label class="fl">PHASE</label><input class="fi" type="text" id="se-phase" value="${esc(s.phase||'')}"></div>
+                <div class="fg"><label class="fl">STATUS</label>
+                  <select class="fs" id="se-status">${['NOT STARTED','IN PROGRESS','DONE','BLOCKED'].map(st=>`<option ${s.status===st?'selected':''}>${st}</option>`).join('')}</select>
+                </div>
+              </div>
+              <div class="fg" style="margin-bottom:8px;"><label class="fl">DESCRIPTION</label><input class="fi" type="text" id="se-desc" value="${esc(s.description||'')}"></div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button class="btn" onclick="cancelStepEdit()">CANCEL</button>
+                <button class="btn btn-inv" onclick="commitStepEdit('${s.id}')">SAVE STEP</button>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        const cls = statusClass[s.status] || 'step-ns';
+        stepEl.innerHTML = `
+          <div class="plan-step-hd">
+            <div class="plan-step-num">${idx+1}</div>
+            <div class="plan-step-title">${esc(s.title||'')}</div>
+            <span class="plan-step-status ${cls}">${esc(s.status)}</span>
+            <div class="plan-step-acts">
+              <button class="plan-step-move" onclick="moveStep('${s.id}',-1)" ${idx===0?'disabled':''} title="Move up">↑</button>
+              <button class="plan-step-move" onclick="moveStep('${s.id}',1)" ${idx===steps.length-1?'disabled':''} title="Move down">↓</button>
+              <button class="btn" onclick="editStep('${s.id}')" style="font-size:9px;padding:3px 6px;">EDIT</button>
+              <button class="btn" onclick="cycleStepStatus('${s.id}')" style="font-size:9px;padding:3px 6px;">STATUS</button>
+              <button class="btn" onclick="deleteStep('${s.id}')" style="font-size:9px;padding:3px 6px;">DEL</button>
+            </div>
+          </div>
+          ${s.description ? `<div class="plan-step-desc">${esc(s.description)}</div>` : ''}`;
+      }
+      list.appendChild(stepEl);
+    });
+  });
+}
+
+function toggleStepForm() {
+  const f = document.getElementById('step-form');
+  const open = f.style.display === 'block';
+  f.style.display = open ? 'none' : 'block';
+  if (!open) { document.getElementById('s-title').focus(); }
+}
+
+function hideStepForm() {
+  document.getElementById('step-form').style.display = 'none';
+  document.getElementById('s-title').value = '';
+  document.getElementById('s-phase').value = '';
+  document.getElementById('s-desc').value = '';
+  document.getElementById('s-status').selectedIndex = 0;
+  document.getElementById('s-title-e').textContent = '';
+}
+
+function saveStepNew() {
+  const title = document.getElementById('s-title').value.trim();
+  document.getElementById('s-title-e').textContent = '';
+  if (!title) { document.getElementById('s-title-e').textContent = 'STEP TITLE IS REQUIRED'; return; }
+  const p = getP();
+  if (!p.steps) p.steps = [];
+  p.steps.push({
+    id: uid(),
+    title,
+    phase: document.getElementById('s-phase').value.trim().toUpperCase(),
+    status: document.getElementById('s-status').value,
+    description: document.getElementById('s-desc').value.trim()
+  });
+  hideStepForm();
+  save(); renderPlan();
+}
+
+function editStep(id) { S.editingStep = id; renderPlan(); }
+function cancelStepEdit() { S.editingStep = null; renderPlan(); }
+
+function commitStepEdit(id) {
+  const p = getP();
+  const s = p.steps.find(x=>x.id===id);
+  if (!s) return;
+  const title = document.getElementById('se-title').value.trim();
+  if (!title) return;
+  s.title = title;
+  s.phase = document.getElementById('se-phase').value.trim().toUpperCase();
+  s.status = document.getElementById('se-status').value;
+  s.description = document.getElementById('se-desc').value.trim();
+  S.editingStep = null;
+  save(); renderPlan();
+}
+
+function deleteStep(id) {
+  confirm2('DELETE THIS STEP? THIS CANNOT BE UNDONE.', () => {
+    const p = getP();
+    p.steps = p.steps.filter(s=>s.id!==id);
+    save(); renderPlan();
+  });
+}
+
+function cycleStepStatus(id) {
+  const p = getP();
+  const s = p.steps.find(x=>x.id===id);
+  if (!s) return;
+  const cycle = ['NOT STARTED','IN PROGRESS','DONE','BLOCKED'];
+  const i = cycle.indexOf(s.status);
+  s.status = cycle[(i+1) % cycle.length];
+  save(); renderPlan();
+}
+
+function moveStep(id, dir) {
+  const p = getP();
+  const steps = p.steps || [];
+  const i = steps.findIndex(s=>s.id===id);
+  const j = i + dir;
+  if (j < 0 || j >= steps.length) return;
+  [steps[i], steps[j]] = [steps[j], steps[i]];
+  save(); renderPlan();
+}
+
+// ─── NOTES ────────────────────────────────────────────────────────────────────
+function renderNotes() {
+  const p = getP();
+  const area = document.getElementById('notes-area');
+  area.value = p.notes || '';
+  updateCC();
+  area.onblur = () => { p.notes = area.value; save(); };
+  area.oninput = updateCC;
+}
+
+function updateCC() {
+  document.getElementById('notes-cc').textContent = document.getElementById('notes-area').value.length + ' CHARACTERS';
+}
+
+// ─── PROJECT CRUD ─────────────────────────────────────────────────────────────
+function openAddModal() {
+  S.editingProject = null;
+  document.getElementById('modal-ttl').textContent = 'NEW PROJECT';
+  clearModalForm();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openEditModal() {
+  const p = getP();
+  if (!p) return;
+  S.editingProject = p.id;
+  document.getElementById('modal-ttl').textContent = 'EDIT PROJECT';
+  document.getElementById('m-name').value = p.name || '';
+  document.getElementById('m-status').value = p.status || 'PLANNED';
+  document.getElementById('m-priority').value = p.priority || 'MED';
+  document.getElementById('m-budget').value = p.budget || '';
+  document.getElementById('m-start').value = p.startDate || '';
+  document.getElementById('m-target').value = p.targetDate || '';
+  document.getElementById('m-desc').value = p.description || '';
+  clearModalErrors();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  S.editingProject = null;
+}
+
+function clearModalForm() {
+  ['m-name','m-budget','m-start','m-target','m-desc'].forEach(id => { document.getElementById(id).value=''; });
+  document.getElementById('m-status').value='PLANNED';
+  document.getElementById('m-priority').value='MED';
+  clearModalErrors();
+}
+
+function clearModalErrors() {
+  document.getElementById('m-name-e').textContent='';
+  document.getElementById('m-budget-e').textContent='';
+}
+
+function saveProjectModal() {
+  clearModalErrors();
+  const name = document.getElementById('m-name').value.trim();
+  const budgetRaw = document.getElementById('m-budget').value;
+  let ok = true;
+  if (!name) { document.getElementById('m-name-e').textContent='PROJECT NAME IS REQUIRED'; ok=false; }
+  if (budgetRaw && (isNaN(parseFloat(budgetRaw))||parseFloat(budgetRaw)<0)) { document.getElementById('m-budget-e').textContent='ENTER A VALID POSITIVE AMOUNT'; ok=false; }
+  if (!ok) return;
+
+  const data = {
+    name,
+    status: document.getElementById('m-status').value,
+    priority: document.getElementById('m-priority').value,
+    budget: parseFloat(budgetRaw)||0,
+    startDate: document.getElementById('m-start').value,
+    targetDate: document.getElementById('m-target').value,
+    description: document.getElementById('m-desc').value.trim()
+  };
+
+  if (S.editingProject) {
+    Object.assign(getP(S.editingProject), data);
+  } else {
+    const proj = { id: uid(), ledger:[], tools:[], steps:[], notes:'', ...data };
+    S.projects.push(proj);
+    S.activeId = proj.id;
+  }
+
+  closeModal();
+  save(); render();
+}
+
+function deleteProject() {
+  const p = getP();
+  if (!p) return;
+  confirm2(`DELETE PROJECT "${p.name.toUpperCase()}"?\nALL DATA WILL BE PERMANENTLY LOST.`, () => {
+    S.projects = S.projects.filter(x=>x.id!==S.activeId);
+    S.activeId = S.projects.length>0 ? S.projects[S.projects.length-1].id : null;
+    save(); render();
+  });
+}
+
+// ─── IMPORT / EXPORT ──────────────────────────────────────────────────────────
+function exportData() {
+  const date = new Date().toISOString().slice(0,10);
+  const blob = new Blob([JSON.stringify({projects:S.projects},null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='homeops-'+date+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('import-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.projects && Array.isArray(data.projects)) {
+        confirm2('IMPORT WILL REPLACE ALL CURRENT DATA. THIS CANNOT BE UNDONE. CONTINUE?', () => {
+          S.projects = data.projects;
+          S.activeId = data.projects.length>0 ? data.projects[0].id : null;
+          S.editingLedger=null; S.editingTool=null;
+          save(); render();
+        });
+      } else {
+        alert('INVALID FILE: no projects array found.');
+      }
+    } catch(err) {
+      alert('INVALID FILE FORMAT');
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// ─── CLOSE MODALS ON OVERLAY CLICK ───────────────────────────────────────────
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target===this) closeModal();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadState();
+render();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js');
+    });
+  }
+</script>
+</body>
+</html>

@@ -39,10 +39,41 @@ body {
     overflow-y: auto;   /* Allows vertical scrolling if content is long */
     height: 100%;       /* Changed from 100vh to 100% for better scrolling */
 }
-/* HEADER */
-#header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;padding-top:env(safe-area-inset-top);height:calc(48px + env(safe-area-inset-top));border-bottom:2px solid var(--black);flex-shrink:0;}
-#header-title{font-size:13px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;}
-#header-controls{display:flex;align-items:center;gap:8px;}
+/* UPDATED HEADER */
+#header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px; /* Increased padding for easier tapping */
+    padding-top: calc(10px + env(safe-area-inset-top));
+    
+    /* CHANGE: min-height instead of fixed height */
+    min-height: calc(60px + env(safe-area-inset-top)); 
+    
+    border-bottom: 2px solid var(--black);
+    flex-shrink: 0;
+    
+    /* ADD: Allow items to wrap if the screen is too narrow */
+    flex-wrap: wrap; 
+    gap: 10px;
+}
+
+#header-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    /* Ensure title doesn't force a wide screen */
+    white-space: nowrap; 
+}
+
+#header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* ADD: If buttons don't fit, they drop to a new line */
+    flex-wrap: wrap; 
+}
 #save-indicator{font-size:10px;font-weight:400;letter-spacing:0.1em;opacity:0;transition:opacity 0.3s;margin-right:8px;}
 #save-indicator.vis{opacity:1;}
 
